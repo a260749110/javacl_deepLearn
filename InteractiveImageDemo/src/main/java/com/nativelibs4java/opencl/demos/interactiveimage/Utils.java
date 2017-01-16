@@ -106,8 +106,7 @@ public class Utils {
 		return ta;
 	}
 	static MouseWheelListener mouseWheelListener = new MouseWheelListener() {
-
-		@Override
+  
 		public void mouseWheelMoved(MouseWheelEvent e) {
 			if (!(e.getSource() instanceof JEditTextArea))
 				return;
