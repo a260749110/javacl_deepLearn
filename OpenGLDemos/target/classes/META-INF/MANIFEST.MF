@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Built-By: JX
+Build-Jdk: 1.8.0_77
+Created-By: Maven Integration for Eclipse
+Main-Class: com.nativelibs4java.opencl.demos.particles.ParticlesDemo
+
