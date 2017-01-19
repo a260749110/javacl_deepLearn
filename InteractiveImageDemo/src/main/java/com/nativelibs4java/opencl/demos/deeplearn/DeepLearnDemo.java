@@ -1,6 +1,5 @@
 package com.nativelibs4java.opencl.demos.deeplearn;
 
-
 import static com.nativelibs4java.opencl.demos.interactiveimage.Utils.chooseFile;
 import static com.nativelibs4java.opencl.demos.interactiveimage.Utils.createLinkLabel;
 import static com.nativelibs4java.opencl.demos.interactiveimage.Utils.isMac;
@@ -62,6 +61,7 @@ import javax.swing.SwingUtilities;
 import org.bridj.Platform;
 import org.bridj.Pointer;
 
+import com.deeplearn.utils.AppContextUtil;
 import com.nativelibs4java.opencl.CLBuffer;
 import com.nativelibs4java.opencl.CLContext;
 import com.nativelibs4java.opencl.CLDevice;
@@ -79,6 +79,7 @@ import com.ochafik.io.WriteText;
 import com.ochafik.swing.UndoRedoUtils;
 import com.ochafik.swing.syntaxcoloring.CCTokenMarker;
 import com.ochafik.swing.syntaxcoloring.JEditTextArea;
+
 public class DeepLearnDemo extends JPanel {
 	JSplitPane imgSrcSplitPane, imgsSplitPane;
 	JLabel origImgLab, resultImgLab, instructionsLabel, timeLabel, progressLabel;
@@ -94,7 +95,7 @@ public class DeepLearnDemo extends JPanel {
 
 	JComponent[] toDisable;
 	File lastOpenedFile;
-
+	private DeepLearnPackage deepLearnPackage = new DeepLearnPackage(2236);
 	static final String RUN_ACTION = "run", SAVE_ACTION = "save";
 	File persistentFile = new File(
 			new File(new File(System.getProperty("user.home"), ".javacl"), getClass().getSimpleName()), "Test.cl");
@@ -122,6 +123,8 @@ public class DeepLearnDemo extends JPanel {
 		}
 	}
 
+	private boolean runFlag = false;
+
 	void run() {
 		save();
 		try {
@@ -142,7 +145,7 @@ public class DeepLearnDemo extends JPanel {
 			resultImgLab.setText(null);
 			resultIcon(null);
 			resultImgLab.setToolTipText(null);
-			
+
 			timeLabel.setVisible(false);
 			progressBar.setIndeterminate(true);
 			progressBar.setVisible(true);
@@ -151,79 +154,84 @@ public class DeepLearnDemo extends JPanel {
 			final long[] elapsedTimeNanos = new long[] { -1L };
 			new Thread() {
 				public void run() {
-					try {
-						setProgress("Creating OpenCL queue...");
-						CLQueue queue = context.createDefaultQueue();
-						setProgress("Compiling program...");
-						CLProgram program = context.createProgram(sourceTextArea.getText());
-						CLKernel[] kernels = program.createKernels();
-						if (kernels.length == 0)
-							throw new RuntimeException(
-									"No kernels found in the source code ! (please mark a function with __kernel)");
+					runFlag = true;
+					while (runFlag) {
 
-						setProgress("Creating OpenCL images...");
-
-
-						float[] f = { 0.2f, 0.5f, 0.8f };
-						FloatBuffer buff = FloatBuffer.wrap(f);
-
-						CLBuffer<Float> cldoubleIn = context.createFloatBuffer(CLMem.Usage.InputOutput, buff, true);
-						CLBuffer<Float> cldoubleOut = context.createFloatBuffer(CLMem.Usage.InputOutput, 100);
-					
-						// cldouble.write(queue, 0, 1,9, false,
-						// eventsToWaitFor);
-
-						long startTimeNanos = System.nanoTime();
-						CLEvent lastEvent = null;
-
-						for (CLKernel kernel : kernels) {
-							setProgress("Running kernel '" + kernel.getFunctionName() + "'...");
-							try {
-
-								kernel.setArgs(cldoubleIn,cldoubleOut);
-
-								lastEvent = kernel.enqueueNDRange(queue, new int[] { 1, 1 }, lastEvent);
-							} catch (CLException ex) {
+						try {
+							setProgress("Creating OpenCL queue...");
+							CLQueue queue = context.createDefaultQueue();
+							setProgress("Compiling program...");
+							CLProgram program = context.createProgram(sourceTextArea.getText());
+							CLKernel[] kernels = program.createKernels();
+							if (kernels.length == 0)
 								throw new RuntimeException(
-										"Error occurred while running kernel '" + kernel.getFunctionName() + "': " + ex,
-										ex);
-							}
-						}
-						lastEvent.waitFor();
-						elapsedTimeNanos[0] = System.nanoTime() - startTimeNanos;
-						Pointer<Float> fp=cldoubleOut.read(queue,lastEvent);
-						
-						lastEvent.waitFor();
-						List<Float> outList=fp.asList();
-						
-						for (int i = 0; i < outList.size(); i++) {
-							System.err.println("i:"+i+"  out:"+outList.get(i));
-						}
+										"No kernels found in the source code ! (please mark a function with __kernel)");
+
+							setProgress("Creating OpenCL images...");
+
+							float[] f = { 0.2f, 0.5f, 0.8f };
+							FloatBuffer buff = FloatBuffer.wrap(f);
+
+							// cldouble.write(queue, 0, 1,9, false,
+							// eventsToWaitFor);
+
+							long startTimeNanos = System.nanoTime();
+							CLEvent lastEvent = null;
+
+							for (CLKernel kernel : kernels) {
+								setProgress("Running kernel '" + kernel.getFunctionName() + "'...");
+								try {
 									
-						for (CLKernel kernel : kernels)
-							kernel.release();
-						program.release();
-						queue.release();
+									deepLearnPackage.initDeepLearnData();
+									deepLearnPackage.setCLKernel(kernel, context);
+//									deepLearnPackage.tryCalculate(0);
 
-
-					} catch (Exception ex) {
-						ex.printStackTrace();
-						resultError(ex);
-					} finally {
-						SwingUtilities.invokeLater(new Runnable() {
-							public void run() {
-								setProgress(null);
-
-								for (JComponent c : toDisable)
-									c.setEnabled(true);
-								progressBar.setIndeterminate(false);
-								progressBar.setVisible(false);
-								if (elapsedTimeNanos[0] >= 0) {
-									timeLabel.setText("Completed in " + (elapsedTimeNanos[0] / 1000000.0) + " msecs");
-									timeLabel.setVisible(true);
+									lastEvent = kernel.enqueueNDRange(queue, new int[] { Config.CalculaSize,1},
+											lastEvent);
+								} catch (CLException ex) {
+									throw new RuntimeException("Error occurred while running kernel '"
+											+ kernel.getFunctionName() + "': " + ex, ex);
 								}
 							}
-						});
+							lastEvent.waitFor();
+							elapsedTimeNanos[0] = System.nanoTime() - startTimeNanos;
+							deepLearnPackage.readResult(queue, lastEvent);
+							// Pointer<Float>
+							// fp=cldoubleOut.read(queue,lastEvent);
+							//
+							// lastEvent.waitFor();
+							// List<Float> outList=fp.asList();
+							//
+							// for (int i = 0; i < outList.size(); i++) {
+							// System.err.println("i:"+i+"
+							// out:"+outList.get(i));
+							// }
+							//
+							for (CLKernel kernel : kernels)
+								kernel.release();
+							program.release();
+							queue.release();
+
+						} catch (Exception ex) {
+							ex.printStackTrace();
+							resultError(ex);
+						} finally {
+							SwingUtilities.invokeLater(new Runnable() {
+								public void run() {
+									setProgress(null);
+
+									for (JComponent c : toDisable)
+										c.setEnabled(true);
+									progressBar.setIndeterminate(false);
+									progressBar.setVisible(false);
+									if (elapsedTimeNanos[0] >= 0) {
+										timeLabel.setText(
+												"Completed in " + (elapsedTimeNanos[0] / 1000000.0) + " msecs");
+										timeLabel.setVisible(true);
+									}
+								}
+							});
+						}
 					}
 				}
 			}.start();
@@ -235,7 +243,11 @@ public class DeepLearnDemo extends JPanel {
 
 	class RunAction extends AbstractAction {
 		public void actionPerformed(ActionEvent e) {
-			run();
+			if (runFlag == false) {
+				run();
+			} else {
+				runFlag = false;
+			}
 		}
 	}
 
@@ -289,7 +301,7 @@ public class DeepLearnDemo extends JPanel {
 			examplesCombo.setToolTipText("Kernel samples in the form of :\n'" + signature + "'");
 			for (Example example : new Example[] {
 					// "Blur",
-					new Example("test", "test") }) {
+					new Example("deeplearn", "deeplearn") }) {
 				examplesCombo.addItem(example);
 			}
 			examplesCombo.addMouseListener(new MouseAdapter() {
@@ -356,12 +368,8 @@ public class DeepLearnDemo extends JPanel {
 		resultHorzScrollModel = resultImgScroll.getHorizontalScrollBar().getModel();
 
 		origImgLab.setDropTarget(new DropTarget(origImgLab, DnDConstants.ACTION_COPY, imgDropTargetListener));
-	
-		add("Center",
-				srcPanel);
 
-
-	
+		add("Center", srcPanel);
 
 		runButton.addActionListener(new RunAction());
 
@@ -502,7 +510,6 @@ public class DeepLearnDemo extends JPanel {
 
 	static Pattern fileExtRx = Pattern.compile("(.*?)(\\.[^.]+)?");
 
-	
 	CLContext getContext() {
 		Object selection = devicesCombo.getSelectedItem();
 		if (!(selection instanceof CLDevice))
@@ -519,7 +526,7 @@ public class DeepLearnDemo extends JPanel {
 			public void run() {
 				// progressLabel.setVisible(caption != null);
 				// progressLabel.setText(caption);
-				if (!isMac()) { 
+				if (!isMac()) {
 					progressBar.setStringPainted(caption != null);
 					progressBar.setString(caption);
 				}
