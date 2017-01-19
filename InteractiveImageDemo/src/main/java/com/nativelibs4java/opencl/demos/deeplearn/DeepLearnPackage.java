@@ -111,7 +111,7 @@ public class DeepLearnPackage {
 				{
 			
 				
-					 result+=parameterListArgs[parameterCellSize*x+32]*(parameterListArgs[parameterCellSize*x]*dataEndListArg[i-j]+
+					 result+=parameterListArgs[parameterCellSize*x+3+j]*(parameterListArgs[parameterCellSize*x]*dataEndListArg[i-j]+
 					parameterListArgs[parameterCellSize*x+1]*dataTurnoverListArg[i-j]+
 					parameterListArgs[parameterCellSize*x+2]);
 				
