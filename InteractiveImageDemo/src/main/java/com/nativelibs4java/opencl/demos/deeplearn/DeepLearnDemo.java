@@ -10,11 +10,10 @@ import static com.nativelibs4java.opencl.demos.interactiveimage.Utils.traceToStr
 import static com.nativelibs4java.opencl.demos.interactiveimage.Utils.withTitle;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Image;
-import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
@@ -52,23 +51,21 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 import org.bridj.Platform;
-import org.bridj.Pointer;
 
-import com.deeplearn.utils.AppContextUtil;
-import com.nativelibs4java.opencl.CLBuffer;
+import com.draw.DrawForm;
+import com.draw.DrawForm.PaintData;
+import com.draw.DrawForm.PaintText;
 import com.nativelibs4java.opencl.CLContext;
 import com.nativelibs4java.opencl.CLDevice;
 import com.nativelibs4java.opencl.CLEvent;
 import com.nativelibs4java.opencl.CLException;
 import com.nativelibs4java.opencl.CLKernel;
-import com.nativelibs4java.opencl.CLMem;
 import com.nativelibs4java.opencl.CLPlatform;
 import com.nativelibs4java.opencl.CLProgram;
 import com.nativelibs4java.opencl.CLQueue;
@@ -82,13 +79,13 @@ import com.ochafik.swing.syntaxcoloring.JEditTextArea;
 
 public class DeepLearnDemo extends JPanel {
 	JSplitPane imgSrcSplitPane, imgsSplitPane;
-	JLabel origImgLab, resultImgLab, instructionsLabel, timeLabel, progressLabel;
+	JLabel  resultImgLab, instructionsLabel, timeLabel, progressLabel;
 	JScrollPane origImgScroll, resultImgScroll;
 
 	JEditTextArea sourceTextArea;
 	JComboBox devicesCombo, examplesCombo;
 	// JTextArea sourceTextArea;
-
+	private DrawForm drawForm=new DrawForm();
 	JButton runButton;
 	BufferedImage image;
 	JProgressBar progressBar;
@@ -138,7 +135,7 @@ public class DeepLearnDemo extends JPanel {
 			if (context == null)
 				return;
 
-			final Point initialViewPosition = origImgScroll.getViewport().getViewPosition();
+//			final Point initialViewPosition = origImgScroll.getViewport().getViewPosition();
 
 			for (JComponent c : toDisable)
 				c.setEnabled(false);
@@ -219,7 +216,29 @@ public class DeepLearnDemo extends JPanel {
 							SwingUtilities.invokeLater(new Runnable() {
 								public void run() {
 									setProgress(null);
-
+									PaintData data=new PaintData();
+									data.dataList=deepLearnPackage.dataEndList;
+									data.color=Color.CYAN;
+									PaintData dataTurnover=new PaintData();
+									dataTurnover.dataList=deepLearnPackage.dataTurnoverList;
+									dataTurnover.color=Color.orange;
+									PaintData dataResult=new PaintData();
+									dataResult.dataList=deepLearnPackage.calculateResult;
+									dataResult.color=Color.red;
+									PaintData dataSuccess=new PaintData();
+									dataSuccess.dataList=deepLearnPackage.successList;
+									dataSuccess.color=Color.green;
+									PaintData line=new PaintData();
+									line.dataList=deepLearnPackage.minLine;
+									line.color=Color.GRAY;
+									PaintText pt=new PaintText();
+									pt.text=deepLearnPackage.dates;
+									pt.distance=30;
+									pt.color=Color.BLACK;
+									drawForm.auctoScal=true;
+									drawForm.setPaintText(pt);
+									drawForm.setData(dataResult,dataSuccess,line,data,dataTurnover);
+									
 									for (JComponent c : toDisable)
 										c.setEnabled(true);
 									progressBar.setIndeterminate(false);
@@ -326,7 +345,7 @@ public class DeepLearnDemo extends JPanel {
 
 		JPanel srcPanel = new JPanel(new BorderLayout());
 		sourceTextArea = textArea(new CCTokenMarker());
-		srcPanel.add("Center", withTitle("Image transformation kernel source code", sourceTextArea));
+		
 
 		runButton = new JButton("Run (" + runKeyStroke + ")");
 		{
@@ -356,21 +375,30 @@ public class DeepLearnDemo extends JPanel {
 			progressLabel.setVisible(false);
 			progressBar.setVisible(false);
 			timeLabel.setVisible(false);
+			srcPanel.add("Center", withTitle("Image transformation kernel source code", sourceTextArea));
 			srcPanel.add("South", toolbar);
+//			srcPanel.add("Center", new JSplitPane(	JSplitPane.VERTICAL_SPLIT ,withTitle("Image transformation kernel source code", sourceTextArea),toolbar) );
 		}
-		origImgScroll = new JScrollPane(origImgLab = new JLabel());
+		drawForm.setAutoscrolls(true);
+	
+		origImgScroll = new JScrollPane(drawForm);
 		resultImgScroll = new JScrollPane(resultImgLab = new JLabel());
-		for (JScrollPane sp : Arrays.asList(origImgScroll, resultImgScroll)) {
-			sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-			sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		}
+
+//		for (JScrollPane sp : Arrays.asList(origImgScroll, resultImgScroll)) {
+//			sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+//			sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+//		}
+//		origImgScroll.setMinimumSize(new Dimension(100, 700));
+//		origImgScroll.setSize(new Dimension(drawForm.rw,1000));
 		resultVertScrollModel = resultImgScroll.getVerticalScrollBar().getModel();
 		resultHorzScrollModel = resultImgScroll.getHorizontalScrollBar().getModel();
 
-		origImgLab.setDropTarget(new DropTarget(origImgLab, DnDConstants.ACTION_COPY, imgDropTargetListener));
-
-		add("Center", srcPanel);
-
+//		origImgLab.setDropTarget(new DropTarget(origImgLab, DnDConstants.ACTION_COPY, imgDropTargetListener));
+		
+		JSplitPane jSplitPane;
+		add("Center",jSplitPane=new JSplitPane(	JSplitPane.VERTICAL_SPLIT ,origImgScroll,srcPanel));
+	
+		jSplitPane.setAutoscrolls(true);
 		runButton.addActionListener(new RunAction());
 
 		toDisable = new JComponent[] { examplesCombo, runButton, devicesCombo, sourceTextArea,
@@ -444,7 +472,7 @@ public class DeepLearnDemo extends JPanel {
 				}
 				dtde.rejectDrop();
 			} catch (Exception ex) {
-				origImgLab.setToolTipText(traceToHTML(ex));
+//				origImgLab.setToolTipText(traceToHTML(ex));
 			}
 		}
 	};
@@ -469,13 +497,13 @@ public class DeepLearnDemo extends JPanel {
 			in.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			origImgLab.setText(traceToHTML(ex));
+//			origImgLab.setText(traceToHTML(ex));
 		}
 	}
 
 	void setImage(BufferedImage image) {
 		this.image = image;
-		origImgLab.setText(null);
+//		origImgLab.setText(null);
 		origIcon(image == null ? null : new ImageIcon(image));
 	}
 
@@ -492,7 +520,7 @@ public class DeepLearnDemo extends JPanel {
 			readImage(f.toURI().toURL());
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			origImgLab.setText(traceToHTML(ex));
+//			origImgLab.setText(traceToHTML(ex));
 		}
 	}
 
@@ -538,29 +566,29 @@ public class DeepLearnDemo extends JPanel {
 	BoundedRangeModel resultVertScrollModel, resultHorzScrollModel;
 
 	void resultIcon(Icon icon) {
-		if (icon == null) {
-			resultImgScroll.getVerticalScrollBar().setModel(resultVertScrollModel);
-			resultImgScroll.getHorizontalScrollBar().setModel(resultHorzScrollModel);
-		} else {
-			resultImgScroll.getVerticalScrollBar().setModel(origImgScroll.getVerticalScrollBar().getModel());
-			resultImgScroll.getHorizontalScrollBar().setModel(origImgScroll.getHorizontalScrollBar().getModel());
-		}
-		resultImgLab.setIcon(icon);
+//		if (icon == null) {
+//			resultImgScroll.getVerticalScrollBar().setModel(resultVertScrollModel);
+//			resultImgScroll.getHorizontalScrollBar().setModel(resultHorzScrollModel);
+//		} else {
+//			resultImgScroll.getVerticalScrollBar().setModel(origImgScroll.getVerticalScrollBar().getModel());
+//			resultImgScroll.getHorizontalScrollBar().setModel(origImgScroll.getHorizontalScrollBar().getModel());
+//		}
+//		resultImgLab.setIcon(icon);
 	}
 
 	void origIcon(Icon icon) {
-		origImgLab.setIcon(icon);
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				JScrollBar bar;
-				BoundedRangeModel model;
-				model = (bar = origImgScroll.getVerticalScrollBar()).getModel();
-				model.setValue((model.getMinimum() + model.getMaximum()) / 2);
-				model = (bar = origImgScroll.getHorizontalScrollBar()).getModel();
-				model.setValue((model.getMinimum() + model.getMaximum()) / 2);
-
-			}
-		});
+//		origImgLab.setIcon(icon);
+//		SwingUtilities.invokeLater(new Runnable() {
+//			public void run() {
+//				JScrollBar bar;
+//				BoundedRangeModel model;
+//				model = (bar = origImgScroll.getVerticalScrollBar()).getModel();
+//				model.setValue((model.getMinimum() + model.getMaximum()) / 2);
+//				model = (bar = origImgScroll.getHorizontalScrollBar()).getModel();
+//				model.setValue((model.getMinimum() + model.getMaximum()) / 2);
+//
+//			}
+//		});
 	}
 
 	void resultError(Exception ex) {

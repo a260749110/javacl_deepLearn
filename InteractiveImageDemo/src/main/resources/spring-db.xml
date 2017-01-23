@@ -35,7 +35,7 @@
 	<context:annotation-config />
 	
 	<!-- jpa 扫描 -->
-	<jpa:repositories base-package="com.sql"/>
+	<jpa:repositories base-package="com.sql.dao"/>
 
 	<bean id="entityManagerFactory"
 		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">

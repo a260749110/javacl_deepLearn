@@ -22,7 +22,7 @@ public class DeeplearnValuePo implements Serializable {
 
 	@Id
 	@Column(name = "`id`")
-	private Integer id;
+	private Long id;
 	@Column(name = "`time`")
 	private Timestamp time;
 
@@ -32,11 +32,11 @@ public class DeeplearnValuePo implements Serializable {
 	public DeeplearnValuePo() {
 	}
 
-	public Integer getId() {
+	public Long getId() {
 		return this.id;
 	}
 
-	public void setId(int id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 

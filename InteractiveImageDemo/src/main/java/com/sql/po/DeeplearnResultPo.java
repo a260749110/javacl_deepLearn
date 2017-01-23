@@ -21,31 +21,31 @@ public class DeeplearnResultPo implements Serializable {
 	@Id
 	private int id;
 	@Column(name="`pa`")
-	private float pa;
+	private double pa;
 	@Column(name="`pb`")
-	private float pb;
+	private double pb;
 	@Column(name="`pc`")
-	private float pc;
+	private double pc;
 
 	@Column(name="`pd`")
 	private String pd;
 	@Column(name="`ra`")
-	private float ra;
+	private double ra;
 	@Column(name="`rb`")
-	private float rb;
+	private double rb;
 	@Column(name="`rc`")
-	private float rc;
+	private double rc;
 	@Column(name="`rd`")
-	private float rd;
+	private double rd;
 
 	@Column(name="result_per")
-	private float resultPer;
+	private double resultPer;
 
 	@Column(name="`result_per_limt`")
-	private float resultPerLimt;
+	private double resultPerLimt;
 
 	@Column(name="`success_per`")
-	private float successPer;
+	private double successPer;
 
 	public DeeplearnResultPo() {
 	}
@@ -58,27 +58,27 @@ public class DeeplearnResultPo implements Serializable {
 		this.id = id;
 	}
 
-	public float getPa() {
+	public double getPa() {
 		return this.pa;
 	}
 
-	public void setPa(float pa) {
+	public void setPa(double pa) {
 		this.pa = pa;
 	}
 
-	public float getPb() {
+	public double getPb() {
 		return this.pb;
 	}
 
-	public void setPb(float pb) {
+	public void setPb(double pb) {
 		this.pb = pb;
 	}
 
-	public float getPc() {
+	public double getPc() {
 		return this.pc;
 	}
 
-	public void setPc(float pc) {
+	public void setPc(double pc) {
 		this.pc = pc;
 	}
 
@@ -90,59 +90,59 @@ public class DeeplearnResultPo implements Serializable {
 		this.pd = pd;
 	}
 
-	public float getRa() {
+	public double getRa() {
 		return this.ra;
 	}
 
-	public void setRa(float ra) {
+	public void setRa(double ra) {
 		this.ra = ra;
 	}
 
-	public float getRb() {
+	public double getRb() {
 		return this.rb;
 	}
 
-	public void setRb(float rb) {
+	public void setRb(double rb) {
 		this.rb = rb;
 	}
 
-	public float getRc() {
+	public double getRc() {
 		return this.rc;
 	}
 
-	public void setRc(float rc) {
+	public void setRc(double rc) {
 		this.rc = rc;
 	}
 
-	public float getRd() {
+	public double getRd() {
 		return this.rd;
 	}
 
-	public void setRd(float rd) {
+	public void setRd(double rd) {
 		this.rd = rd;
 	}
 
-	public float getResultPer() {
+	public double getResultPer() {
 		return this.resultPer;
 	}
 
-	public void setResultPer(float resultPer) {
+	public void setResultPer(double resultPer) {
 		this.resultPer = resultPer;
 	}
 
-	public float getResultPerLimt() {
+	public double getResultPerLimt() {
 		return this.resultPerLimt;
 	}
 
-	public void setResultPerLimt(float resultPerLimt) {
+	public void setResultPerLimt(double resultPerLimt) {
 		this.resultPerLimt = resultPerLimt;
 	}
 
-	public float getSuccessPer() {
+	public double getSuccessPer() {
 		return this.successPer;
 	}
 
-	public void setSuccessPer(float successPer) {
+	public void setSuccessPer(double successPer) {
 		this.successPer = successPer;
 	}
 

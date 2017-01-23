@@ -25,81 +25,101 @@ public class DeepLearnData implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public float getPa() {
+	public double[] getPa() {
 		return pa;
 	}
 
-	public void setPa(float pa) {
+	public void setPa(double[] pa) {
 		this.pa = pa;
 	}
 
-	public float getPb() {
+	public double[] getPb() {
 		return pb;
 	}
 
-	public void setPb(float pb) {
+	public void setPb(double[] pb) {
 		this.pb = pb;
 	}
 
-	public float getPc() {
+	public double[] getPc() {
 		return pc;
 	}
 
-	public void setPc(float cc) {
+	public void setPc(double[] cc) {
 		this.pc = cc;
 	}
 
-	public float[] getpD() {
+	public double[] getpD() {
 		return pd;
 	}
 
-	public void setpD(float[] pD) {
+	public void setpD(double[] pD) {
 		this.pd = pD;
 	}
 
-	public float getResultPer() {
+	public double getResultPer() {
 		return resultPer;
 	}
 
-	public void setResultPer(float resultPer) {
+	public void setResultPer(double resultPer) {
 		this.resultPer = resultPer;
 	}
 
-	public float getSuccessPer() {
+	public double getSuccessPer() {
 		return successPer;
 	}
 
-	public void setSuccessPer(float successPer) {
+	public void setSuccessPer(double successPer) {
 		this.successPer = successPer;
 	}
 
-	private float[] pd = new float[Config.SAMPLING_SIZE];
-	private float pa, pb, pc;
+	private double[] pa = new double[Config.SAMPLING_SIZE];
+	private double[] pb = new double[Config.SAMPLING_SIZE];
+	private double[] pc = new double[Config.SAMPLING_SIZE];
+	private double[] pd = new double[Config.SAMPLING_SIZE];
 
-	private float resultPer;// 结果占比
 
-	private float successPer;// 成功占比
+	private double resultPer;// 结果占比
+
+	private double successPer;// 成功占比
 	@JSONField(serialize = false)
-	public static int size = 3 + Config.SAMPLING_SIZE;
+	public static int size =  Config.SAMPLING_SIZE;
 
-	public void fillFloat(List<Float> list) {
-		list.add(pa);
-		list.add(pb);
-		list.add(pc);
+	public void fillFloatPd(List<Double> list) {
 		for (int i = 0; i < pd.length; i++) {
 			list.add(pd[i]);
 		}
 
 	}
+	public void fillFloatPa(List<Double> list) {
+		for (int i = 0; i < pd.length; i++) {
+			list.add(pa[i]);
+		}
 
+	}
+	public void fillFloatPb(List<Double> list) {
+		for (int i = 0; i < pd.length; i++) {
+			list.add(pb[i]);
+		}
+
+	}
+	public void fillFloatPc(List<Double> list) {
+		for (int i = 0; i < pd.length; i++) {
+			list.add(pc[i]);
+		}
+
+	}
 	public DeepLearnData() {
 	}
 
 	public DeepLearnData(DeepLearnData data) {
-		this.pa = data.pa;
-		this.pb = data.pb;
-		this.pc = data.pc;
-		this.pd = new float[data.pd.length];
+		this.pa = new double[data.pd.length];
+		this.pb = new double[data.pd.length];
+		this.pc = new double[data.pd.length];
+		this.pd = new double[data.pd.length];
+		System.arraycopy(data.pa, 0, this.pa, 0, data.pd.length);
+		System.arraycopy(data.pb, 0, this.pb, 0, data.pd.length);
+		System.arraycopy(data.pc, 0, this.pc, 0, data.pd.length);
 		System.arraycopy(data.pd, 0, this.pd, 0, data.pd.length);
 		this.successPer = data.successPer;
 		this.resultPer = data.resultPer;
@@ -107,13 +127,16 @@ public class DeepLearnData implements Serializable {
 
 	public DeepLearnData(DeeplearnResultPo po) {
 
-		pa = po.getPa();
-		pb = po.getPb();
-		pc = po.getPc();
+		
+		
 		JSONArray jl = new JSONArray(po.getPd());
-		pd = new float[jl.length()];
+		pd = new double[jl.length()];
 		for (int i = 0; i < jl.length(); i++) {
-			pd[i] = (float) jl.getDouble(i);
+			pa[i] = po.getPa();
+			pb[i] = po.getPb();
+			pc[i] = po.getPc();
+			pd[i] = (double) jl.getDouble(i);
 		}
+		setSuccessPer(69999999999f);
 	}
 }
