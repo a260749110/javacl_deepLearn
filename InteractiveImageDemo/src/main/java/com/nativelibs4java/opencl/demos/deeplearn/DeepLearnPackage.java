@@ -29,9 +29,9 @@ public class DeepLearnPackage {
 	 double[] parameterListPbDouble;
 	 double[] parameterListPcDouble;
 	 double[] parameterListPdDouble;
-	 double[] calculateResult;
- 	 String[] dates;
-	 public SimpleDateFormat dateFormat=new SimpleDateFormat("YY-MM-DD");
+	 public double[] calculateResult;
+	 public String[] dates;
+	 public SimpleDateFormat dateFormat=new SimpleDateFormat("yy-MM-dd");
 	private int size;
 
 	private List<DeepLearnData> parameterList;
@@ -62,6 +62,7 @@ public class DeepLearnPackage {
 
 	private CLBuffer<Double> resultListArgs;
 	CLBuffer<Double> calculateResultArgs = null;
+	CLBuffer<Double> calculateSuccessArgs = null;
 	public void setCLKernel(CLKernel clKernel, CLContext context) {
 		CLBuffer<Double> dataEndListArg = null;
 		CLBuffer<Double> dataTurnoverListArg = null;
@@ -108,11 +109,12 @@ public class DeepLearnPackage {
 		parameterListPdArgs = context.createDoubleBuffer(Usage.InputOutput, parameterListPdBuffer, true);
 		resultListArgs = context.createDoubleBuffer(Usage.InputOutput, resultCellSize * size);
 		calculateResultArgs = context.createDoubleBuffer(Usage.InputOutput, dataEndList.length);
+		calculateSuccessArgs=calculateResultArgs = context.createDoubleBuffer(Usage.InputOutput, dataEndList.length);
 		// dataEndListArg ,
 		// dataTurnoverListArg,successListArg,dataSize,parameterListArgs
 		// ,resultListArgs,resultSize
 		clKernel.setArgs(dataEndListArg, dataTurnoverListArg, successListArg, dataSize, Config.SAMPLING_SIZE,
-				parameterListPaArgs,parameterListPbArgs,parameterListPcArgs,parameterListPdArgs, DeepLearnData.size, resultListArgs, resultCellSize,calculateResultArgs,0);
+				parameterListPaArgs,parameterListPbArgs,parameterListPcArgs,parameterListPdArgs, DeepLearnData.size, resultListArgs, resultCellSize,calculateResultArgs,0,calculateSuccessArgs);
 	}
 
 	public void tryCalculate(int x) {
@@ -174,7 +176,7 @@ public class DeepLearnPackage {
 		deepLearnValueDto.refresh(result, size, resultCellSize, 0, 1, parameterList, successSize,
 				dataEndList.length - Config.SAMPLING_SIZE, deeplearnResultPo);
 		deepLearnValueDto.tryUpPo(deeplearnResultPo);
-		deepLearnValueDto.save();
+		deepLearnValueDto.save(this);
 
 	}
 	double[] minLine;
@@ -286,7 +288,23 @@ public class DeepLearnPackage {
 
 	private void initPo() {
 		deeplearnResultPo = AppContextUtil.getDeeplearnService().deeplearnResultDao.findOne(id);
-
+		if(deeplearnResultPo==null)
+		{
+			deeplearnResultPo=new DeeplearnResultPo();
+			deeplearnResultPo.setId(id);
+			deeplearnResultPo.setPa(0);
+			deeplearnResultPo.setPb(0);
+			deeplearnResultPo.setPc(0);
+			deeplearnResultPo.setPd("");
+			deeplearnResultPo.setRa(Config.RA_DEF);
+			deeplearnResultPo.setRb(Config.RB_DEF);
+			deeplearnResultPo.setRc(Config.RC_DEF);
+			deeplearnResultPo.setRd(Config.RD_DEF);
+			deeplearnResultPo.setResultPer(0);
+			deeplearnResultPo.setSuccessPer(9999);
+			AppContextUtil.getDeeplearnService().deeplearnResultDao.save(deeplearnResultPo);
+			
+		}
 		if (deeplearnResultPo.getPd()==null||deeplearnResultPo.getPd().isEmpty()) {
 			fillPo();
 		}

@@ -16,6 +16,7 @@ import com.deeplearn.service.DeeplearnService;
 import com.deeplearn.utils.AppContextUtil;
 import com.nativelibs4java.opencl.demos.deeplearn.Config;
 import com.nativelibs4java.opencl.demos.deeplearn.DeepLearnData;
+import com.nativelibs4java.opencl.demos.deeplearn.DeepLearnPackage;
 import com.sql.po.DeeplearnResultPo;
 import com.sql.po.DeeplearnValuePo;
 import com.sun.glass.ui.Size;
@@ -34,7 +35,7 @@ public class DeepLearnValueDto implements Serializable {
 	private boolean changeFlag=false;
 	@JSONField(serialize = false)
 	public DeepLearnData miniData;
-	public int learnID=10;
+	public int learnID=1;
 	public double successPo=90000;
 	public int learnCount=0;
 	public boolean resetFlag=false;
@@ -57,9 +58,10 @@ public class DeepLearnValueDto implements Serializable {
 			DeepLearnData data = dataBase.get(i);
 			double readSuccess = result.get(cellSize * i + indexSuccess);
 			double befor = data.getSuccessPer();
-	
+			double successRate=result.get(cellSize * i + 2);
 //		System.err.println(i+" " +readSuccess+"  "+ data.getSuccessPer()+"  "+po.getSuccessPer() +"  ");
 			data.setSuccessPer(readSuccess );
+			data.setResultPer(successRate);
 //			data.setResultPer((readCount / sampleSize) / (Float.valueOf(successSize) / Float.valueOf(sampleSize)));
 
 			if (
@@ -67,7 +69,7 @@ public class DeepLearnValueDto implements Serializable {
 					(data.getSuccessPer()) <befor ) {
 				changeFlag=true;
 				 getDataList().add(data);
-				System.err.println(" ok :" + data.getSuccessPer() + " bf: " + befor + " po: " + po.getSuccessPer());
+				System.err.println(" ok :" + data.getSuccessPer() + " bf: " + befor + " po: " + po.getSuccessPer()+" rate:"+successRate);
 			}
 
 		}
@@ -157,12 +159,16 @@ public class DeepLearnValueDto implements Serializable {
 		}
 		return true;
 	}
-
-	public void save() {
+	
+	public void save(DeepLearnPackage deepLearnPackage) {
 		if(!changeFlag)
 			return;
 		changeFlag=false;
 		DeeplearnValuePo po = new DeeplearnValuePo();
+		if(miniData!=null)
+		{
+		po.setMinValue(miniData.getSuccessPer());
+		}
 		if(learnCount>=Config.maxLearnSize||resetFlag)
 		{
 			po.setId(getId()*1000000l+learnID);
@@ -171,12 +177,18 @@ public class DeepLearnValueDto implements Serializable {
 			po.setValue(JSON.toJSONString(this));
 			dataList.clear();
 			miniData=null;
+			FormValue formValue=new FormValue();
+			formValue.value=deepLearnPackage.calculateResult;
+			formValue.index=deepLearnPackage.dates;
+			po.setFormValue(JSON.toJSONString(formValue));
+			
 		}
 		else
 		{
 			learnCount++;
 		po.setId((long)getId());
 		po.setValue(JSON.toJSONString(this));
+		po.setFormValue(null);
 		}
 	
 		po.setTime(new Timestamp(System.currentTimeMillis()));
@@ -199,5 +211,9 @@ public class DeepLearnValueDto implements Serializable {
 	public void setId(int id) {
 		this.id = id;
 	}
-
+public static class FormValue implements Serializable
+{
+public double[] value;
+public String[] index;
+}
 }

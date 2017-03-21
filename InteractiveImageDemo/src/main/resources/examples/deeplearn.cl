@@ -30,12 +30,16 @@ __kernel void test(__global double* dataEndListArg,__global double* dataTurnover
  	__global double* successListArg,int dataSize,int samplingSize,__global double* parameterListPaArgs,
 	__global double* parameterListPbArgs,__global double* parameterListPcArgs,__global double* parameterListPdArgs,
 	int parameterCellSize,
-__global double* resultListArgs,int resultCellSize,__global double* calculateResultArgs,int calculateIndex)
+__global double* resultListArgs,int resultCellSize,__global double* calculateResultArgs,int calculateIndex,__global double* calculateSuccessArgs)
 { 
 	int x = get_global_id(0);
 	double success=0.0f;
+	double maybeSuccess=0.0f;
+	double maybeSuccessTrue=0.0f;
 	double successCount=0.0f;
 	double countS=0;
+
+	double[10] beforCells;
 	if(x==calculateIndex)
 	{
 	for(int i=0;i<dataSize;i++)
@@ -43,6 +47,7 @@ __global double* resultListArgs,int resultCellSize,__global double* calculateRes
 	calculateResultArgs[i]=0;
 	}	
 	}
+	double resultBefor=0;
 	for(int i=samplingSize-1;i<dataSize;i++)
 	{	
 		double result =calculation(dataEndListArg, dataTurnoverListArg,
@@ -52,6 +57,20 @@ __global double* resultListArgs,int resultCellSize,__global double* calculateRes
 		{
 			calculateResultArgs[i]=result;
 			}
+		if(resultBefor<0&&result>0)
+		{
+			maybeSuccess+=1.0f;
+			for(int j=0;j<10;j++)
+			{
+				if(successListArg[i+j]>0)
+				{
+					maybeSuccessTrue+=1.0f;
+					break;
+				}
+			}
+		
+		}
+		resultBefor=result;
 		double temp=successListArg[i]-result;
 
 		if(i<dataSize-samplingSize)
@@ -65,6 +84,8 @@ __global double* resultListArgs,int resultCellSize,__global double* calculateRes
 		{
 		success+=temp*temp;
 		countS+=1;
+
+
 		}
 		else
 		{
@@ -74,7 +95,7 @@ __global double* resultListArgs,int resultCellSize,__global double* calculateRes
 		}
 	}
 	resultListArgs[x*resultCellSize]=success/countS;
-	resultListArgs[x*resultCellSize+1]=successCount;
+	resultListArgs[x*resultCellSize+1]=maybeSuccess;
+		resultListArgs[x*resultCellSize+2]=maybeSuccessTrue/maybeSuccess;
 
 }
- 

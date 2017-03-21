@@ -2,10 +2,6 @@ package com.sql.po;
 
 import java.io.Serializable;
 import javax.persistence.*;
-
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
-
 import java.sql.Timestamp;
 
 
@@ -15,18 +11,19 @@ import java.sql.Timestamp;
  */
 @Entity
 @Table(name="deeplearn_value")
-@DynamicInsert
-@DynamicUpdate
+
 public class DeeplearnValuePo implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	@Column(name = "`id`")
 	private Long id;
-	@Column(name = "`time`")
+	@Column(name="`form_value`")
+	private String formValue;
+	@Column(name="min_value")
+	private double minValue;
+	@Column(name="`time`")
 	private Timestamp time;
-
-	@Column(name = "`value`")
+	@Column(name="`value`")
 	private String value;
 
 	public DeeplearnValuePo() {
@@ -38,6 +35,22 @@ public class DeeplearnValuePo implements Serializable {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public String getFormValue() {
+		return this.formValue;
+	}
+
+	public void setFormValue(String formValue) {
+		this.formValue = formValue;
+	}
+
+	public double getMinValue() {
+		return this.minValue;
+	}
+
+	public void setMinValue(double minValue) {
+		this.minValue = minValue;
 	}
 
 	public Timestamp getTime() {

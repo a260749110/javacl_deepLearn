@@ -58,6 +58,8 @@ import javax.swing.SwingUtilities;
 
 import org.bridj.Platform;
 
+import com.deeplearn.service.DeeplearnService;
+import com.deeplearn.utils.AppContextUtil;
 import com.draw.DrawForm;
 import com.draw.DrawForm.PaintData;
 import com.draw.DrawForm.PaintText;
@@ -76,6 +78,10 @@ import com.ochafik.io.WriteText;
 import com.ochafik.swing.UndoRedoUtils;
 import com.ochafik.swing.syntaxcoloring.CCTokenMarker;
 import com.ochafik.swing.syntaxcoloring.JEditTextArea;
+import com.sql.dao.ActivityDao;
+import com.sql.po.TActivityPo;
+
+import sun.awt.AppContext;
 
 public class DeepLearnDemo extends JPanel {
 	JSplitPane imgSrcSplitPane, imgsSplitPane;
@@ -92,7 +98,7 @@ public class DeepLearnDemo extends JPanel {
 
 	JComponent[] toDisable;
 	File lastOpenedFile;
-	private DeepLearnPackage deepLearnPackage = new DeepLearnPackage(2236);
+	private DeepLearnPackage deepLearnPackage = new DeepLearnPackage(Config.ID);
 	static final String RUN_ACTION = "run", SAVE_ACTION = "save";
 	File persistentFile = new File(
 			new File(new File(System.getProperty("user.home"), ".javacl"), getClass().getSimpleName()), "Test.cl");
@@ -610,6 +616,9 @@ public class DeepLearnDemo extends JPanel {
 	}
 
 	public static void main(String[] args) {
+		
+		TActivityPo activityPo=new TActivityPo();
+		AppContextUtil.getDeeplearnService().activityDao.save(activityPo);
 		SetupUtils.failWithDownloadProposalsIfOpenCLNotAvailable();
 
 		JFrame f = new JFrame("JavaCL's Interactive Image Transform Demo");
