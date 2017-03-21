@@ -55,7 +55,7 @@ public class InteractiveImageDemo extends JPanel {
 	JSplitPane imgSrcSplitPane, imgsSplitPane;
 	JLabel origImgLab, resultImgLab, instructionsLabel, timeLabel, progressLabel;
 	JScrollPane origImgScroll, resultImgScroll;
-    
+    private static final String SRC="examples/";
 	JEditTextArea sourceTextArea;
 	JComboBox devicesCombo, examplesCombo;
 	//JTextArea sourceTextArea;
@@ -556,7 +556,7 @@ public class InteractiveImageDemo extends JPanel {
 	}
 	void loadExample(String fileName) {
 		try {
-			String s = readTextResource("examples/" + fileName + ".cl");
+			String s = readTextResource(SRC + fileName + ".cl");
 			sourceTextArea.setText(s);
 			sourceTextArea.setCaretPosition(0);
 		} catch (Exception ex) {
